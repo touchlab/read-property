@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import { parse } from 'dot-properties'
 import * as fs from 'fs'
-import {setFailed} from "@actions/core";
+import { setFailed } from '@actions/core'
 
 /**
  * The main function for the action.
@@ -16,16 +16,13 @@ export async function run(): Promise<void> {
     core.debug(`read-property: property-${property}`)
 
     const src = fs.readFileSync(file, 'utf8')
-    core.info(`src read ${src}`)
+
     const obj = parse(src)
     const propVal = obj[property]
 
     core.debug(`read-property: propVal-${propVal}`)
 
-    if(!propVal){
-      throw new Error("prop not found ok")
-    }
-    core.setOutput("propVal", propVal)
+    core.setOutput('propVal', propVal)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

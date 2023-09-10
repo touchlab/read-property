@@ -3204,7 +3204,7 @@ async function run() {
         const obj = (0, dot_properties_1.parse)(src);
         const propVal = obj[property];
         core.debug(`read-property: propVal-${propVal}`);
-        core.setOutput(property, propVal);
+        core.setOutput('propVal', propVal);
     }
     catch (error) {
         // Fail the workflow run if an error occurs
