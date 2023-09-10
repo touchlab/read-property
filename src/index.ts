@@ -15,6 +15,7 @@ export async function run(): Promise<void> {
     core.debug(`read-property: property-${property}`)
 
     const src = fs.readFileSync(file, 'utf8')
+    core.info(`src read ${src}`)
     const obj = parse(src)
     const propVal = obj[property]
 
