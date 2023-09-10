@@ -12,7 +12,6 @@ export async function run(): Promise<void> {
     const file: string = core.getInput('file')
     const property: string = core.getInput('property')
 
-    core.setFailed("Ugh")
     core.debug(`read-property: file-${file}`)
     core.debug(`read-property: property-${property}`)
 
@@ -23,6 +22,9 @@ export async function run(): Promise<void> {
 
     core.debug(`read-property: propVal-${propVal}`)
 
+    if(!propVal){
+      throw new Error("prop not found ok")
+    }
     core.setOutput("propVal", propVal)
   } catch (error) {
     // Fail the workflow run if an error occurs
