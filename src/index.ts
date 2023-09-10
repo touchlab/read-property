@@ -20,7 +20,7 @@ export async function run(): Promise<void> {
 
     core.debug(`read-property: propVal-${propVal}`)
 
-    core.setOutput(property, propVal)
+    core.setOutput("propVal", propVal)
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

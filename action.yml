@@ -4,15 +4,17 @@ author: 'Your name or organization here'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  file:
+    description: 'The properties file path'
     required: true
-    default: '1000'
+  property:
+    description: 'The property key'
+    required: true
 
 # Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  propVal:
+    description: 'The property value'
 
 runs:
   using: node16
