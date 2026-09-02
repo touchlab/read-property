@@ -65,7 +65,7 @@
     ]
   },
   "dependencies": {
-    "@actions/core": "^2.0.3",
+    "@actions/core": "^3.0.1",
     "dot-properties": "^1.1.2"
   },
   "devDependencies": {
