@@ -1,8 +1,7 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Read Property'
+description: 'Read a value from a Java/JVM properties file'
+author: 'Touchlab'
 
-# Define your inputs here.
 inputs:
   file:
     description: 'The properties file path'
@@ -11,11 +10,10 @@ inputs:
     description: 'The property key'
     required: true
 
-# Define your outputs here.
 outputs:
   propVal:
     description: 'The property value'
 
 runs:
-  using: node16
+  using: node24
   main: dist/index.js
