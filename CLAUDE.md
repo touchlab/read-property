@@ -1,6 +1,7 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with
+code in this repository.
 
 ## What this is
 
@@ -19,8 +20,8 @@ the README — a missing key yields `undefined`, and only thrown `Error`s reach
 
 ```bash
 npm ci                # install (node_modules is not checked in)
-npm run all           # format:write + lint + test + package — run before committing
-npm run bundle        # format:write + package (the minimum before committing src changes)
+npm run all           # format:write + lint + test + package
+npm run bundle        # format:write + package (before committing src)
 npm run package       # ncc build src/index.ts -> dist/index.js
 npm run ci-test       # jest, without the badge-writing wrapper
 npm run format:check  # what CI runs; format:write to fix

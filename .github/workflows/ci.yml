@@ -2,10 +2,14 @@ name: Continuous Integration
 
 on:
   pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
-      - 'releases/*'
+
+permissions:
+  contents: read
 
 jobs:
   test-typescript:
@@ -15,11 +19,13 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
         id: setup-node
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: 24
           cache: npm
@@ -47,7 +53,9 @@ jobs:
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
 
       - name: Test Local Action
         id: test-action
@@ -59,5 +67,8 @@ jobs:
       - name: Check Output
         id: output
         run: |
-          echo "propVal=${{ steps.test-action.outputs.propVal }}"
-          [ "${{ steps.test-action.outputs.propVal }}" = "1.4.2" ]
+          echo "propVal=${STEPS_TEST_ACTION_OUTPUTS_PROPVAL}"
+          [ "${STEPS_TEST_ACTION_OUTPUTS_PROPVAL}" = "1.4.2" ]
+        env:
+          STEPS_TEST_ACTION_OUTPUTS_PROPVAL:
+            ${{ steps.test-action.outputs.propVal }}

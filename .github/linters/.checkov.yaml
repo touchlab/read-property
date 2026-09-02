@@ -1,0 +1,8 @@
+# checkov runs against the whole workspace (super-linter passes --directory),
+# and ci.yml's `npm ci` has already populated node_modules by then.
+compact: true
+quiet: true
+skip-path:
+  - node_modules
+  - coverage
+  - dist
