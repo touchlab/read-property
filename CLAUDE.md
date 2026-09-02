@@ -135,9 +135,3 @@ uvx codespell $(git ls-files | grep -vE '^(dist|badges)/')
 npx markdownlint-cli -c .github/linters/.markdown-lint.yml README.md CLAUDE.md
 npx prettier --check "**/*.{yml,json,md}"
 ```
-
-## Known leftover
-
-`CODEOWNERS` still lists the upstream template's owners
-(`@actions/actions-runtime`, `@ncalteen`) rather than anyone in this org, so it
-grants no effective review ownership.
