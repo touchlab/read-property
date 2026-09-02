@@ -7,74 +7,99 @@
  */
 
 import * as core from '@actions/core'
+import * as fs from 'fs'
+import * as path from 'path'
 import * as index from '../src/index'
 
-// Mock the GitHub Actions core library
-const debugMock = jest.spyOn(core, 'debug')
-const getInputMock = jest.spyOn(core, 'getInput')
-const setFailedMock = jest.spyOn(core, 'setFailed')
-const setOutputMock = jest.spyOn(core, 'setOutput')
+// fs exports are non-configurable in modern Node, so jest.spyOn can't replace
+// readFileSync; swap the module for one whose readFileSync is a jest.fn that
+// delegates to the real implementation by default.
+jest.mock('fs', () => {
+  const actual = jest.requireActual<typeof import('fs')>('fs')
+  return { ...actual, readFileSync: jest.fn(actual.readFileSync) }
+})
+
+// Mock the GitHub Actions core library. These need real (no-op)
+// implementations rather than calling through: the real core.setFailed sets
+// process.exitCode, which would make Jest exit non-zero even when every test
+// passes.
+const getInputMock = jest.spyOn(core, 'getInput').mockImplementation(() => '')
+const setFailedMock = jest.spyOn(core, 'setFailed').mockImplementation(() => {})
+const setOutputMock = jest.spyOn(core, 'setOutput').mockImplementation(() => {})
+jest.spyOn(core, 'debug').mockImplementation(() => {})
 
 // Mock the action's entrypoint
 const runMock = jest.spyOn(index, 'run')
 
-// Other utilities
-const timeRegex = /^\d{2}:\d{2}:\d{2}/
+const fixture = path.join(__dirname, 'fixtures', 'gradle.properties')
+
+const mockInputs = (file: string, property: string): void => {
+  getInputMock.mockImplementation((name: string): string => {
+    switch (name) {
+      case 'file':
+        return file
+      case 'property':
+        return property
+      default:
+        return ''
+    }
+  })
+}
 
 describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('sets the time output', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name: string): string => {
-      switch (name) {
-        case 'milliseconds':
-          return '500'
-        default:
-          return ''
-      }
-    })
+  it('sets propVal from the properties file', async () => {
+    mockInputs(fixture, 'LIBRARY_VERSION')
 
     await index.run()
     expect(runMock).toHaveReturned()
 
-    // Verify that all of the core library functions were called correctly
-    expect(debugMock).toHaveBeenNthCalledWith(1, 'Waiting 500 milliseconds ...')
-    expect(debugMock).toHaveBeenNthCalledWith(
-      2,
-      expect.stringMatching(timeRegex)
-    )
-    expect(debugMock).toHaveBeenNthCalledWith(
-      3,
-      expect.stringMatching(timeRegex)
-    )
-    expect(setOutputMock).toHaveBeenNthCalledWith(
-      1,
-      'time',
-      expect.stringMatching(timeRegex)
-    )
+    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'propVal', '1.4.2')
+    expect(setFailedMock).not.toHaveBeenCalled()
   })
 
-  it('sets a failed status', async () => {
-    // Set the action's inputs as return values from core.getInput()
-    getInputMock.mockImplementation((name: string): string => {
-      switch (name) {
-        case 'milliseconds':
-          return 'this is not a number'
-        default:
-          return ''
-      }
+  it('reads a dotted key', async () => {
+    mockInputs(fixture, 'kotlin.code.style')
+
+    await index.run()
+    expect(runMock).toHaveReturned()
+
+    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'propVal', 'official')
+  })
+
+  it('sets an undefined output for a missing key', async () => {
+    mockInputs(fixture, 'NOT_A_REAL_KEY')
+
+    await index.run()
+    expect(runMock).toHaveReturned()
+
+    expect(setOutputMock).toHaveBeenNthCalledWith(1, 'propVal', undefined)
+    expect(setFailedMock).not.toHaveBeenCalled()
+  })
+
+  it('sets a failed status when the file cannot be read', async () => {
+    mockInputs(
+      path.join(__dirname, 'fixtures', 'does-not-exist.properties'),
+      'X'
+    )
+
+    // The error has to be constructed inside the test realm: errors raised by
+    // node's own fs are not `instanceof Error` inside Jest's sandbox, so the
+    // action's `error instanceof Error` guard would silently skip setFailed.
+    ;(fs.readFileSync as jest.Mock).mockImplementationOnce(() => {
+      throw new Error('ENOENT: no such file or directory')
     })
 
     await index.run()
     expect(runMock).toHaveReturned()
 
-    // Verify that all of the core library functions were called correctly
-    expect(setFailedMock).toHaveBeenNthCalledWith(
-      1,
-      'milliseconds not a number'
+    expect(setFailedMock).toHaveBeenCalledTimes(1)
+    expect(setFailedMock).toHaveBeenCalledWith(
+      expect.stringContaining('ENOENT')
     )
+    expect(setOutputMock).not.toHaveBeenCalled()
   })
 })

@@ -3,9 +3,9 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "nodenext",
+    "types": ["node", "jest"],
     "rootDir": "./src",
     "moduleResolution": "nodenext",
-    "baseUrl": "./",
     "sourceMap": true,
     "outDir": "./dist",
     "noImplicitAny": true,

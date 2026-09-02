@@ -1,7 +1,6 @@
 import * as core from '@actions/core'
 import { parse } from 'dot-properties'
 import * as fs from 'fs'
-import { setFailed } from '@actions/core'
 
 /**
  * The main function for the action.
