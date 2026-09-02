@@ -101,6 +101,41 @@ ESLint 10 removed `.eslintrc` support entirely; config lives in
 default. `.github/linters/` now holds only the markdown/yaml lint configs and
 the tsconfig that adds `__tests__` to type-aware linting.
 
+### super-linter (`linter.yml`) is deliberately scoped
+
+Its `env` block turns off everything ci.yml already enforces with this repo's
+own tool versions (ESLint, Prettier for every language), plus Biome and
+textlint, which v8 enables by default and which contradict `.prettierrc.json`
+and rewrite prose. Don't "fix" it by re-enabling those. What remains is what
+ci.yml does not cover: yamllint, markdownlint, actionlint, zizmor, checkov,
+gitleaks, codespell, trivy, JSON.
+
+Things that fail it in non-obvious ways:
+
+- The checkout needs `fetch-depth: 0`; a shallow clone of a feature branch has
+  no `main` for super-linter to diff against and it dies with
+  `[FATAL] Neither main, nor origin/main exist`.
+- Every workflow needs a top-level `permissions:` block. checkov's `CKV2_GHA_1`
+  treats a missing one as write-all even when each job declares its own.
+- `FILTER_REGEX_EXCLUDE` is a regex, not a glob.
+- Actions are pinned to commit SHAs with a `# vN` comment (zizmor
+  `unpinned-uses`). When bumping one, verify the SHA resolves to the tag it
+  claims: `gh api repos/<owner>/<repo>/git/ref/tags/<tag>` (deref annotated tags
+  via `git/tags/<sha>`).
+
+Most of it can be run locally before pushing, at the versions the slim image
+ships:
+
+```bash
+uvx zizmor@1.25.2 .github/workflows/ .github/dependabot.yml action.yml
+uvx checkov -d . --framework github_actions
+uvx --from actionlint-py actionlint
+uvx yamllint -c .github/linters/.yaml-lint.yml .github/workflows/*.yml
+uvx codespell $(git ls-files | grep -vE '^(dist|badges)/')
+npx markdownlint-cli -c .github/linters/.markdown-lint.yml README.md CLAUDE.md
+npx prettier --check "**/*.{yml,json,md}"
+```
+
 ## Known leftover
 
 `CODEOWNERS` still lists the upstream template's owners
