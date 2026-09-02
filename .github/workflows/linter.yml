@@ -8,6 +8,9 @@ on:
     branches-ignore:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: Lint Code Base
@@ -66,12 +69,6 @@ jobs:
           VALIDATE_JSONC_PRETTIER: false
           VALIDATE_YAML_PRETTIER: false
           VALIDATE_MARKDOWN_PRETTIER: false
-          # JSON linting runs ESLint against eslint.config.mjs, which has no
-          # JSON parser; package.json and tsconfig.json are already validated
-          # by npm and tsc. The upstream typescript-action template disables
-          # this for the same reason.
-          VALIDATE_JSON: false
-          VALIDATE_JSONC: false
           # Biome is a third formatter/linter, on by default since v8. Its
           # defaults (semicolons, double quotes, tabs) are the opposite of this
           # repo's .prettierrc.json, so it rewrites every file ci.yml just
